@@ -10,8 +10,10 @@ import org.springframework.web.servlet.LocaleResolver;
 import org.thymeleaf.util.StringUtils;
 
 /**
- * 自定义国际化语言解析器
+ * 国际化语言解析器
  * 
+ * @author zincredible
+ * @date 2019/03/22 08:56:37
  */
 public class MyLocaleResolver implements LocaleResolver {
 
@@ -21,7 +23,7 @@ public class MyLocaleResolver implements LocaleResolver {
 	@Override
 	public Locale resolveLocale(HttpServletRequest req) {
 		String i18n_language = req.getParameter(I18N_LANGUAGE);
-		Locale locale = Locale.getDefault();
+		Locale locale = null;
 		if (!StringUtils.isEmpty(i18n_language)) {
 			String[] language = i18n_language.split("_");
 			locale = new Locale(language[0], language[1]);
@@ -30,12 +32,16 @@ public class MyLocaleResolver implements LocaleResolver {
 			HttpSession session = req.getSession();
 			session.setAttribute(I18N_LANGUAGE_SESSION, locale);
 		} else {
-			// 如果没有带国际化参数，则判断session有没有保存，有保存，则使用保存的，也就是之前设置的，避免之后的请求不带国际化参数造成语言显示不对
+			// 如果没有带国际化参数，则从session中获取
 			HttpSession session = req.getSession();
 			Locale localeInSession = (Locale) session.getAttribute(I18N_LANGUAGE_SESSION);
 			if (localeInSession != null) {
 				locale = localeInSession;
 			}
+		}
+		// 如果上面都没获取到，则使用系统默认
+		if (locale == null) {
+			locale = Locale.getDefault();
 		}
 		return locale;
 	}
